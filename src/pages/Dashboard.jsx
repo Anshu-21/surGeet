@@ -1,0 +1,172 @@
+import React, { useEffect, useState } from 'react';
+import authService from '../appwrite/auth';
+import service from '../appwrite/config';
+import { motion, AnimatePresence } from 'framer-motion';
+
+const Dashboard = () => {
+  const [user, setUser] = useState(null);
+  const [recordings, setRecordings] = useState([]);
+  const [playlists, setPlaylists] = useState([]);
+  const [favorites, setFavorites] = useState([]);
+  const [activeSection, setActiveSection] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const currentUser = await authService.getCurrentUser();
+        if (currentUser) {
+          setUser(currentUser);
+          const userId = currentUser.$id;
+          const [userRecordings, userPlaylists] = await Promise.all([
+            service.getRecordingsForUser(userId),
+            service.getPlaylistsForUser(userId),
+          ]);
+          setRecordings(userRecordings);
+          setPlaylists(userPlaylists);
+
+          const userFavorites = await service.getFavoritesForUser(userId);
+          setFavorites(userFavorites);
+        }
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    const fetchRecordings = async () => {
+      try {
+        const response = await service.listFiles(); 
+        if (response && response.files) {
+          const filesWithUrls = response.files.map((file) => ({
+            ...file,
+            fileUrl: service.storage.getFileView("6777e4e6000fd92f38ea", file.$id), 
+          }));
+          setRecordings(filesWithUrls);
+        }
+      } catch (error) {
+        console.error("Error fetching recordings:", error);
+      }
+    };
+
+    fetchRecordings();
+  }, []);
+
+  return (
+    <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black min-h-screen p-8">
+      {user && (
+        <motion.div
+          initial={{ opacity: 0, y: -50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-center text-3xl font-bold text-white mb-8"
+        >
+          Welcome, {user.name}!
+        </motion.div>
+      )}
+
+      <div className="flex justify-center gap-4 mb-8">
+        <button
+          onClick={() => setActiveSection('recordings')}
+          className={`px-4 py-2 rounded ${activeSection === 'recordings' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
+        >
+          Recordings
+        </button>
+        <button
+          onClick={() => setActiveSection('playlists')}
+          className={`px-4 py-2 rounded ${activeSection === 'playlists' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
+        >
+          Playlists
+        </button>
+        <button
+          onClick={() => setActiveSection('favorites')}
+          className={`px-4 py-2 rounded ${activeSection === 'favorites' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
+        >
+          Favorite Music
+        </button>
+      </div>
+
+      <AnimatePresence>
+      {activeSection === 'recordings' && (
+  <motion.section
+    key="recordings"
+    initial={{ opacity: 0, y: 50 }}
+    animate={{ opacity: 1, y: 0 }}
+    exit={{ opacity: 0, y: 50 }}
+    className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-700 via-gray-800 to-black"
+  >
+    <h2 className="text-2xl font-bold text-white mb-6 text-center">
+      Your Recordings
+    </h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {recordings.length > 0 ? (
+        recordings.map((recording) => (
+          <div
+            key={recording.$id}
+            className="p-4 rounded-lg shadow-md bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white"
+          >
+            <p className="text-lg font-semibold mb-2">{recording.name || 'Recording'}</p>
+            <div className="overflow-hidden rounded-full">
+              <audio
+                controls
+                className="w-full bg-gray-800 rounded"
+                onError={(e) =>
+                  console.error("Error playing audio:", e, recording.fileUrl)
+                }
+              >
+                <source src={recording.fileUrl} type="audio/wav" />
+              </audio>
+            </div>
+          </div>
+        ))
+      ) : (
+        <p className="text-gray-400 text-center col-span-full">
+          No recordings found.
+        </p>
+      )}
+    </div>
+  </motion.section>
+)}
+
+
+        {activeSection === 'playlists' && (
+          <motion.section
+            key="playlists"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="p-4 bg-gray-600 shadow-md rounded-md"
+          >
+            <h2 className="text-xl font-semibold text-white mb-4">Your Playlists</h2>
+            {playlists.length > 0 ? (
+              <div className="grid gap-4">{playlists.map((playlist) => playlist.name)}</div>
+            ) : (
+              <p className="text-white">No playlists available</p>
+            )}
+          </motion.section>
+        )}
+
+        {activeSection === 'favorites' && (
+          <motion.section
+            key="favorites"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="p-4 bg-gray-600 shadow-md rounded-md"
+          >
+            <h2 className="text-xl font-semibold text-white mb-4">Favorite Music</h2>
+            {favorites.length > 0 ? (
+              <div className="grid gap-4">{favorites.map((fav) => fav.name)}</div>
+            ) : (
+              <p className="text-white">No favorite music available</p>
+            )}
+          </motion.section>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+export default Dashboard;
