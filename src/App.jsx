@@ -6,7 +6,6 @@ import { login, logout } from "./store/authSlice";
 import { Footer, Header } from "./components";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar/Sidebar";
-// import BottomBar from "./pages/BottomBar";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -50,7 +49,6 @@ function App() {
         <Outlet context={{ backgroundStyle, setBackgroundStyle }} />
       </main>
       <Footer />
-      {/* <BottomBar /> */}
     </div>
   ) : null;
 }

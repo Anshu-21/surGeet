@@ -1,7 +1,7 @@
 import React from "react";
 import { assets } from "../assets/assets";
 
-function App() {
+function Home() {
   return (
     <div className="flex bg-gradient-to-br from-gray-800 via-gray-900 to-black text-white min-h-screen">
       <div className="flex-1 p-6">
@@ -60,4 +60,4 @@ function App() {
   );
 }
 
-export default App;
+export default Home;
