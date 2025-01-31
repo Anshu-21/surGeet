@@ -1,38 +1,27 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import service from "../appwrite/config";
+import authService from "../appwrite/auth";
 
 const Player = () => {
   const [isRecording, setIsRecording] = useState(false);
-  const [recordedAudio, setRecordedAudio] = useState(null);
+  const [isPaused, setIsPaused] = useState(false);
   const [audioURL, setAudioURL] = useState(null);
-  const [timer, setTimer] = useState(0); 
-  const [currentZone, setCurrentZone] = useState(null);
-  const [currentSentence, setCurrentSentence] = useState(''); 
+  const [timer, setTimer] = useState(0);
+  const [recordingName, setRecordingName] = useState("");
   const [recordings, setRecordings] = useState([]);
+  const [volume, setVolume] = useState(1);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const intervalRef = useRef(null);
-  const userId = "sampleUserId"; 
 
-  const zones = {
-    salutation: ['Hello!', 'Good Morning!', 'Good Evening!'],
-    wishing: ['Happy Birthday!', 'Good Luck!', 'Have a great day!'],
-    gratitude: ['Thank you!', 'I appreciate it!', 'Thanks a lot!'],
-    compliments: ['You look great!', 'Well done!', 'Nice work!'],
-    musicRecording: ['Record your own music!'], 
-  };
-
+  // Fetch recordings on component mount
   useEffect(() => {
     const fetchRecordings = async () => {
       try {
-        const response = await service.listFiles(); 
-        if (response && response.files) {
-          const filesWithUrls = response.files.map((file) => ({
-            ...file,
-            fileUrl: service.storage.getFileView("6777e4e6000fd92f38ea", file.$id), 
-          }));
-          setRecordings(filesWithUrls);
+        const response = await service.listRecordings(); // Fetch recordings from Appwrite
+        if (response && response.documents) {
+          setRecordings(response.documents);
         }
       } catch (error) {
         console.error("Error fetching recordings:", error);
@@ -41,35 +30,19 @@ const Player = () => {
 
     fetchRecordings();
   }, []);
-  
 
-  const handleZoneSelection = (zone) => {
-    setCurrentZone(zone);
-    setSentence(''); 
-    setCurrentSentence(''); 
-    setTimer(0); 
-    setRecordedAudio(null); 
-  };
-
-
-  const handleSentenceSelection = (selectedSentence) => {
-    setCurrentSentence(selectedSentence);
-    setSentence(selectedSentence); 
-  };
-
-  
   const startRecording = () => {
     setIsRecording(true);
+    setIsPaused(false);
     audioChunksRef.current = [];
-    setTimer(0); 
-    
+    setTimer(0);
 
     intervalRef.current = setInterval(() => {
       setTimer((prevTime) => prevTime + 1);
     }, 1000);
 
-  
-    navigator.mediaDevices.getUserMedia({ audio: true })
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
       .then((stream) => {
         mediaRecorderRef.current = new MediaRecorder(stream);
 
@@ -78,117 +51,92 @@ const Player = () => {
         };
 
         mediaRecorderRef.current.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
-          const audioUrl = URL.createObjectURL(audioBlob);
-          setAudioURL(audioUrl); 
-        
-          if (userId && audioBlob) {
-            const name = prompt("Enter a name for your recording:");
-            if (name) {
-              try {
-                const file = new File([audioBlob], `${name}.wav`, { type: "audio/wav" });
-        
-                if (file) {
-                  const fileUploadResponse = await service.uploadRecordingFile(file, name, userId);
-        
-                  const updatedRecordings = await service.listFiles(userId);
-                  console.log("Updated Recordings: ", updatedRecordings);
-                  setRecordings(updatedRecordings || []); 
-                } else {
-                  console.error("File initialization failed.");
-                }
-              } catch (error) {
-                console.error("Error saving recording:", error);
-              }
+          const audioBlob = new Blob(audioChunksRef.current, {
+            type: "audio/wav",
+          });
+
+          if (recordingName) {
+            const file = new File([audioBlob], `${recordingName}.wav`, {
+              type: "audio/wav",
+            });
+
+            try {
+              const user = await authService.getCurrentUser(); // Fetch current user details
+              const metadata = {
+                recording_name: recordingName,
+                uploaded_by: user.$id,
+              };
+
+              const uploadedData = await service.uploadRecording(file, metadata);
+
+              // Update the recordings list after successful upload
+              const updatedRecordings = await service.listRecordings();
+              setRecordings(updatedRecordings.documents || []);
+              setRecordingName("");
+            } catch (error) {
+              console.error("Error saving recording:", error);
             }
+          } else {
+            alert("Please provide a name for the recording.");
           }
         };
 
         mediaRecorderRef.current.start();
       })
       .catch((error) => {
-        console.error('Error accessing microphone:', error);
+        console.error("Error accessing microphone:", error);
       });
   };
 
   const stopRecording = () => {
     setIsRecording(false);
-    clearInterval(intervalRef.current); 
+    clearInterval(intervalRef.current);
     mediaRecorderRef.current.stop();
   };
 
+  const pauseRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.pause();
+      setIsPaused(true);
+      clearInterval(intervalRef.current);
+    }
+  };
+
+  const resumeRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "paused") {
+      mediaRecorderRef.current.resume();
+      setIsPaused(false);
+
+      intervalRef.current = setInterval(() => {
+        setTimer((prevTime) => prevTime + 1);
+      }, 1000);
+    }
+  };
 
   const formatTime = (timeInSeconds) => {
     const minutes = Math.floor(timeInSeconds / 60);
     const seconds = timeInSeconds % 60;
-    return `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    return `${minutes < 10 ? "0" : ""}${minutes}:${
+      seconds < 10 ? "0" : ""
+    }${seconds}`;
   };
 
   return (
-    <div className="grid grid-cols-3 gap-8 p-8 bg-gray-900 min-h-screen text-white">
-      <div className="flex flex-col space-y-4">
-        <h2 className="text-xl font-semibold">Select Zone</h2>
-        {Object.keys(zones).map((zone, index) => (
-          <button
-            key={index}
-            onClick={() => handleZoneSelection(zone)}
-            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium py-2 px-4 rounded-md hover:opacity-80 transition duration-200"
-          >
-            {zone.charAt(0).toUpperCase() + zone.slice(1)}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col items-center justify-center space-y-4">
-        <h2 className="text-2xl font-semibold">{currentZone === 'musicRecording' ? 'Music Recording' : currentSentence || 'No sentence selected'}</h2>
-
-        <div className="bg-gray-800 rounded-lg p-6 w-80 text-center">
-          {currentZone && (
-            <div className="mb-4">
-              <h3 className="text-xl font-semibold">{currentZone.charAt(0).toUpperCase() + currentZone.slice(1)} Zone</h3>
-              <p className="text-sm text-gray-400">{currentZone === 'musicRecording' ? 'Record your own music:' : 'Please record the selected sentence:'}</p>
-            </div>
-          )}
-
-          {isRecording && (
-            <div className="mb-4">
-              <span className="text-lg">{formatTime(timer)}</span>
-            </div>
-          )}
-
-          <div className="flex justify-center space-x-4">
-            <button
-              onClick={startRecording}
-              className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-400 transition duration-200"
-              disabled={isRecording}
-            >
-              Start Recording
-            </button>
-            <button
-              onClick={stopRecording}
-              className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-400 transition duration-200"
-              disabled={!isRecording}
-            >
-              Stop Recording
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col space-y-4">
-      <div className="col-span-3 mt-8 bg-gray-800 p-6 rounded-lg">
+    <div className="grid grid-cols-4 px-3 bg-gray-900 min-h-screen text-white">
+      {/* Sidebar for recordings */}
+      <div className="col-span-1 bg-gray-800 p-6 rounded-lg flex flex-col justify-between overflow-y-auto max-h-[calc(100vh-6rem)]">
+      
         <h3 className="text-xl font-semibold mb-4">All Recordings</h3>
         <div className="space-y-4">
           {recordings.length > 0 ? (
             recordings.map((recording) => (
-              <div key={recording.$id} className="bg-gray-700 p-4 rounded-lg">
-                <p className="text-sm font-semibold">{recording.name}</p>
-                <audio
-                  controls
-                  className="w-full mt-2"
-                  onError={(e) => console.error("Error playing audio:", e, recording.fileUrl)}
-                >
-                  <source src={recording.fileUrl} type="audio/wav" />
+              <div key={recording.$id} className="bg-gray-600 p-4 rounded-lg">
+                <p className="text-sm font-semibold">{recording.recording_name}</p>
+                <audio controls className="w-full mt-2">
+                  <source
+                    src={`https://cloud.appwrite.io/v1/storage/buckets/6777e4e6000fd92f38ea/files/${recording.file_url}/view?project=677351890026d97dd5a6`}
+                    type="audio/wav"
+                  />
                 </audio>
               </div>
             ))
@@ -196,7 +144,61 @@ const Player = () => {
             <p className="text-gray-400">No recordings found.</p>
           )}
         </div>
+      
+       
       </div>
+
+      {/* Main Recording Section */}
+      <div className="col-span-3 flex flex-col items-center justify-center space-y-6">
+        <div className="w-full max-w-lg bg-gray-800 rounded-lg p-6">
+          <h2 className="text-2xl font-semibold mb-4 text-center">
+            Record Your Track
+          </h2>
+          <div className="mb-4">
+            <label
+              htmlFor="recordingName"
+              className="block text-sm font-medium mb-2"
+            >
+              Recording Name
+            </label>
+            <input
+              id="recordingName"
+              type="text"
+              value={recordingName}
+              onChange={(e) => setRecordingName(e.target.value)}
+              className="w-full p-2 rounded-lg bg-gray-700 text-white"
+              placeholder="Enter recording name..."
+            />
+          </div>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={startRecording}
+              className="bg-green-500 text-white px-12 py-2 rounded-lg hover:bg-green-400"
+              disabled={isRecording}
+            >
+              Start
+            </button>
+            
+            <button
+              onClick={stopRecording}
+              className="bg-red-500 text-white px-12 py-2 rounded-lg hover:bg-red-400"
+              disabled={!isRecording}
+            >
+              Stop
+            </button>
+          </div>
+          <div>
+            <p className="text-center text-sm text-gray-400">
+              Recording Duration: {formatTime(timer)}
+            </p>
+            <div className="bg-gray-700 w-full h-2 rounded-lg mt-2">
+              <div
+                className="bg-blue-500 h-2 rounded-lg"
+                style={{ width: `${(timer / 60) * 100}%` }}
+              ></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

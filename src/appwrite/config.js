@@ -1,96 +1,51 @@
-import { Client, Databases, Storage, Query, Account } from "appwrite";
+import { Client, Databases, Storage } from "appwrite";
+import authService from "../appwrite/auth";
 
 const client = new Client();
 
 client
-  .setEndpoint("https://cloud.appwrite.io/v1") 
-  .setProject("677351890026d97dd5a6"); 
+  .setEndpoint("https://cloud.appwrite.io/v1") // Replace with your Appwrite endpoint
+  .setProject("677351890026d97dd5a6"); // Replace with your Appwrite project ID
 
 const databases = new Databases(client);
-const storage = new Storage(client);
-const account = new Account(client);
+const storage = new Storage(client); // Initialize the storage service
 
-const getCurrentUser = async () => {
+// Function to upload recording
+const uploadRecording = async (file, metadata) => {
   try {
-    const session = await account.getSession("current");
-    if (session) {
-      return await account.get();
-    }
-    return null;
-  } catch (error) {
-    console.error("Error fetching current user:", error);
-    throw new Error("Unable to fetch current user.");
-  }
-};
+    const response = await storage.createFile(
+      "6777e4e6000fd92f38ea", // Replace with your Appwrite storage bucket ID
+      "unique()",  // Generate a unique file ID
+      file
+    );
 
-const createPlaylist = async ({ playlistName, playlistDescription, tracks = [] }) => {
-  try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) throw new Error("User is not authenticated.");
-
-    const userId = currentUser.$id;
-
-    const playlist = await databases.createDocument(
-      "6777dcf30030191a36ec", 
-      "6777dd830024d8068010", 
-      "unique()",
+    // Store metadata in the database
+    await databases.createDocument(
+      "6777dcf30030191a36ec", // Replace with your database ID
+      "6777de770002c58af978", // Replace with your collection ID
+      "unique()", // Generate a unique document ID
       {
-        playlist_name: playlistName,
-        description: playlistDescription,
-        user_id: userId,
-        track_ids: [],
+        recording_name: metadata.recording_name,
+        file_url: response.$id, // Reference to the uploaded file
+        uploaded_by: metadata.uploaded_by,
       }
     );
-
-    const trackIds = [];
-    for (const track of tracks) {
-      if (!track.name || !track.url) {
-        throw new Error("Each track must have a name and URL.");
-      }
-
-      const trackDoc = await databases.createDocument(
-        "6777dcf30030191a36ec", 
-        "6777ddd8003dd9c01604", 
-        "unique()",
-        {
-          track_name: track.name,
-          track_url: track.url,
-          playlist_id: playlist.$id,
-        }
-      );
-      trackIds.push(trackDoc.$id);
-    }
-
-    await databases.updateDocument(
-      "6777dcf30030191a36ec",
-      "6777dd830024d8068010",
-      playlist.$id,
-      { track_ids: trackIds }
-    );
-
-    return playlist;
   } catch (error) {
-    console.error("Error creating playlist:", error);
+    console.error("Error uploading recording:", error);
     throw error;
   }
 };
 
-const fetchPlaylists = async () => {
+// Function to list recordings
+const listRecordings = async () => {
   try {
-    const currentUser = await getCurrentUser();
-    if (!currentUser) throw new Error("User is not authenticated.");
-
-    const userId = currentUser.$id;
-
     const response = await databases.listDocuments(
-      "6777dcf30030191a36ec", 
-      "6777dd830024d8068010", 
-      [Query.equal("user_id", userId)]
+      "6777dcf30030191a36ec", // Replace with your database ID
+      "6777de770002c58af978"  // Replace with your collection ID
     );
-
-    return response.documents;
+    return response;
   } catch (error) {
-    console.error("Error fetching playlists:", error);
+    console.error("Error fetching recordings:", error);
     throw error;
   }
 };
@@ -99,7 +54,6 @@ export default {
   client,
   databases,
   storage,
-  getCurrentUser,
-  createPlaylist,
-  fetchPlaylists,
+  uploadRecording,
+  listRecordings,
 };

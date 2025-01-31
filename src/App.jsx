@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import "./App.css";
 import authService from "./appwrite/auth";
 import { login, logout } from "./store/authSlice";
 import { Footer, Header } from "./components";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar/Sidebar";
+import MusicPlayer from "./pages/MusicPlayer";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -14,6 +15,8 @@ function App() {
     "linear-gradient(to bottom right, #1F2937, #111827, #000000)"
   );
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+
+  const userStatus = useSelector((state) => state.auth.status); // Access user status from redux store
 
   const toggleSidebar = () => {
     setSidebarOpen(!isSidebarOpen);
@@ -42,12 +45,12 @@ function App() {
         flexDirection: "column",
       }}
     >
-  
       <Header toggleSidebar={toggleSidebar} />
       <main style={{ flex: 1 }}>
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <Outlet context={{ backgroundStyle, setBackgroundStyle }} />
       </main>
+      {/* {userStatus && <MusicPlayer />}  */}
       <Footer />
     </div>
   ) : null;

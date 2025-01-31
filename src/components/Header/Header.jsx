@@ -9,12 +9,12 @@ import {
   FaHome,
   FaHeadphones,
 } from "react-icons/fa";
-import authService from "../../appwrite/auth"; 
-import { setUser } from "../../store/authSlice"; 
+import authService from "../../appwrite/auth";
+import { setUser } from "../../store/authSlice";
 
 function Header({ toggleSidebar }) {
   const authStatus = useSelector((state) => state.auth.status);
-  const user = useSelector((state) => state.auth.user); 
+  const user = useSelector((state) => state.auth.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -25,7 +25,7 @@ function Header({ toggleSidebar }) {
       if (authStatus && !user) {
         try {
           const currentUser = await authService.getCurrentUser();
-          dispatch(setUser(currentUser)); 
+          dispatch(setUser(currentUser));
         } catch (error) {
           console.error("Error fetching user data:", error);
         }
@@ -86,11 +86,10 @@ function Header({ toggleSidebar }) {
                   <li key={item.name}>
                     <button
                       onClick={() => navigate(item.slug)}
-                      className={`flex items-center space-x-2 ${
-                        item.name === "Get Started"
+                      className={`flex items-center space-x-2 ${item.name === "Get Started"
                           ? "text-white bg-gradient-to-r from-orange-500 to-pink-600 hover:from-orange-600 hover:to-pink-700 transition-all duration-200 font-medium rounded-lg text-sm px-4 py-2"
                           : "text-gray-300 hover:text-orange-500 transition duration-200 text-sm font-medium"
-                      }`}
+                        }`}
                     >
                       {item.icon}
                       <span>{item.name}</span>
@@ -118,6 +117,7 @@ function Header({ toggleSidebar }) {
                     >
                       Profile
                     </li>
+
                     <li
                       className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
                     >
