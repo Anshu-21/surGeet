@@ -34,17 +34,13 @@ const Dashboard = () => {
 
     fetchUserData();
   }, []);
-
+  
   useEffect(() => {
     const fetchRecordings = async () => {
       try {
-        const response = await service.listFiles(); 
-        if (response && response.files) {
-          const filesWithUrls = response.files.map((file) => ({
-            ...file,
-            fileUrl: service.storage.getFileView("6777e4e6000fd92f38ea", file.$id), 
-          }));
-          setRecordings(filesWithUrls);
+        const response = await service.listRecordings(); 
+        if (response && response.documents) {
+          setRecordings(response.documents);
         }
       } catch (error) {
         console.error("Error fetching recordings:", error);
@@ -53,6 +49,7 @@ const Dashboard = () => {
 
     fetchRecordings();
   }, []);
+
 
   return (
     <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black min-h-screen p-8">
@@ -100,33 +97,23 @@ const Dashboard = () => {
     <h2 className="text-2xl font-bold text-white mb-6 text-center">
       Your Recordings
     </h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {recordings.length > 0 ? (
-        recordings.map((recording) => (
-          <div
-            key={recording.$id}
-            className="p-4 rounded-lg shadow-md bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 text-white"
-          >
-            <p className="text-lg font-semibold mb-2">{recording.name || 'Recording'}</p>
-            <div className="overflow-hidden rounded-full">
-              <audio
-                controls
-                className="w-full bg-gray-800 rounded"
-                onError={(e) =>
-                  console.error("Error playing audio:", e, recording.fileUrl)
-                }
-              >
-                <source src={recording.fileUrl} type="audio/wav" />
-              </audio>
-            </div>
-          </div>
-        ))
-      ) : (
-        <p className="text-gray-400 text-center col-span-full">
-          No recordings found.
-        </p>
-      )}
-    </div>
+    <div className="space-y-4">
+          {recordings.length > 0 ? (
+            recordings.map((recording) => (
+              <div key={recording.$id} className="bg-gray-600 p-4 rounded-lg">
+                <p className="text-sm font-semibold">{recording.recording_name}</p>
+                <audio controls className="w-full mt-2">
+                  <source
+                    src={`https://cloud.appwrite.io/v1/storage/buckets/6777e4e6000fd92f38ea/files/${recording.file_url}/view?project=677351890026d97dd5a6`}
+                    type="audio/wav"
+                  />
+                </audio>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400">No recordings found.</p>
+          )}
+        </div>
   </motion.section>
 )}
 

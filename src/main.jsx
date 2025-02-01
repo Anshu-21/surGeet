@@ -15,7 +15,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import AllList from "./pages/AllList.jsx";
 import Player from "./pages/Player.jsx";
 import CreateList from "./pages/CreateList.jsx";
-import { AudioProvider } from "./pages/AudioContext";
+import { AudioProvider } from "./pages/AudioProvider.jsx";
 
 const router = createBrowserRouter([
   {

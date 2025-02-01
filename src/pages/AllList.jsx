@@ -5,8 +5,10 @@ import { FaMusic, FaList, FaMicrophone } from "react-icons/fa";
 import { MdArrowBack, MdArrowForward, MdPause, MdPlayArrow } from "react-icons/md";
 import { BsFillHeartFill, BsFillPlusCircleFill } from "react-icons/bs";
 import { assets } from "../assets/assets";
+import service from "../appwrite/config";
 
 const AllList = () => {
+  
   const [selectedSong, setSelectedSong] = useState(null);
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
@@ -17,9 +19,7 @@ const AllList = () => {
   const [isRepeat, setIsRepeat] = useState(false);
   const [volume, setVolume] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState("Music Taste");
-
-
-
+  const [recordings, setRecordings] = useState([]);
   const audioRef = useRef(null);
 
   const songs = [
@@ -57,7 +57,6 @@ const AllList = () => {
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    setSelectedTaste(null);
     setSelectedSong(null);
   };
 
@@ -104,12 +103,12 @@ const AllList = () => {
 
   const handleShuffle = () => {
     setIsShuffle(!isShuffle);
-    if (isRepeat) setIsRepeat(false); // Disable repeat if shuffle is enabled
+    if (isRepeat) setIsRepeat(false); 
   };
 
   const handleRepeat = () => {
     setIsRepeat(!isRepeat);
-    if (isShuffle) setIsShuffle(false); // Disable shuffle if repeat is enabled
+    if (isShuffle) setIsShuffle(false); 
   };
 
   const handleTimeUpdate = () => {
@@ -146,6 +145,21 @@ const AllList = () => {
     );
   };
 
+  useEffect(() => {
+    const fetchRecordings = async () => {
+      try {
+        const response = await service.storage.listFiles("6777e4e6000fd92f38ea");
+        setRecordings(response.files);
+      } catch (error) {
+        console.error("Error fetching recordings:", error);
+      }
+    };
+
+    fetchRecordings();
+  }, []);
+  
+  
+
   return (
     <div className="flex min-h-screen bg-gray-900 text-white">
       <div className="w-64 bg-gradient-to-br from-gray-800 via-gray-950 to-black h-screen p-6 flex flex-col space-y-8">
@@ -175,7 +189,6 @@ const AllList = () => {
 
 
 
-      {/* Main Content */}
       <div className="flex-1 relative mx-3 my-3 overflow-y-auto max-h-[calc(100vh-6rem)]">
         {selectedCategory === "Music Taste" && (
           <div>
@@ -223,6 +236,34 @@ const AllList = () => {
 
           </div>
         )}
+      
+
+      {selectedCategory === "Recordings" && (
+      <div>
+        <h3 className="text-xl font-semibold mb-4">All Recordings</h3>
+        <div className="space-y-4 flex flex-col-reverse">
+        {recordings.length > 0 ? (
+            recordings.map((recording) => (
+              <div key={recording.$id} className="bg-gray-600 p-4 rounded-lg">
+                <p className="text-sm font-semibold">
+                  {recording.name || "Unnamed Recording"}
+                </p>
+                <p className="text-xs text-gray-300">Uploaded by: {recording.userName}</p>
+                <audio controls className="w-full mt-2">
+                  <source
+                    src={`https://cloud.appwrite.io/v1/storage/buckets/6777e4e6000fd92f38ea/files/${recording.$id}/view?project=677351890026d97dd5a6`}
+                    type="audio/wav"
+                  />
+                </audio>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400">No recordings found.</p>
+          )}
+        </div>
+      </div>
+    )}
+
       </div>
 
 

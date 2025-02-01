@@ -15,11 +15,10 @@ const Player = () => {
   const audioChunksRef = useRef([]);
   const intervalRef = useRef(null);
 
-  // Fetch recordings on component mount
   useEffect(() => {
     const fetchRecordings = async () => {
       try {
-        const response = await service.listRecordings(); // Fetch recordings from Appwrite
+        const response = await service.listRecordings();
         if (response && response.documents) {
           setRecordings(response.documents);
         }
@@ -61,7 +60,7 @@ const Player = () => {
             });
 
             try {
-              const user = await authService.getCurrentUser(); // Fetch current user details
+              const user = await authService.getCurrentUser(); 
               const metadata = {
                 recording_name: recordingName,
                 uploaded_by: user.$id,
@@ -69,7 +68,6 @@ const Player = () => {
 
               const uploadedData = await service.uploadRecording(file, metadata);
 
-              // Update the recordings list after successful upload
               const updatedRecordings = await service.listRecordings();
               setRecordings(updatedRecordings.documents || []);
               setRecordingName("");
@@ -123,7 +121,6 @@ const Player = () => {
 
   return (
     <div className="grid grid-cols-4 px-3 bg-gray-900 min-h-screen text-white">
-      {/* Sidebar for recordings */}
       <div className="col-span-1 bg-gray-800 p-6 rounded-lg flex flex-col justify-between overflow-y-auto max-h-[calc(100vh-6rem)]">
       
         <h3 className="text-xl font-semibold mb-4">All Recordings</h3>
@@ -148,7 +145,6 @@ const Player = () => {
        
       </div>
 
-      {/* Main Recording Section */}
       <div className="col-span-3 flex flex-col items-center justify-center space-y-6">
         <div className="w-full max-w-lg bg-gray-800 rounded-lg p-6">
           <h2 className="text-2xl font-semibold mb-4 text-center">

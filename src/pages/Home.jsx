@@ -1,22 +1,25 @@
 import React, { useContext } from "react";
-import { assets } from "../assets/assets";
-import { AudioContext } from "../pages/AudioContext";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { assets } from "../assets/assets"; 
+import { AudioContext } from "./AudioProvider";
 
-const song = {
-  name: "Tere Ho Ke",
-  artist: "King, Bella",
-  url: assets.songs.songki,
-  image: assets.images.th,
-};
+const song = { name: "Tera Ho Ke", artist: "King, Bella", url: assets.songs.songki, image: assets.images.th };
 
 function Home() {
-  const { currentSong, isPlaying, playSong, handlePlayPause } = useContext(AudioContext);
+  const { selectedSong, isPlaying, playSong, handlePlayPause } = useContext(AudioContext);
+  const isLoggedIn = useSelector((state) => state.auth.status); // Check login status
+  const navigate = useNavigate(); // For redirection
 
   const handlePlay = () => {
-    if (currentSong?.url !== song.url) {
-      playSong(song); // Play song using the global AudioProvider
+    if (!isLoggedIn) {
+      navigate("/login"); // Redirect to login page if not logged in
+      return;
+    }
+    if (selectedSong?.url !== song.url) {
+      playSong(song, 0);
     } else {
-      handlePlayPause(); // Toggle play/pause if the same song is playing
+      handlePlayPause();
     }
   };
 
@@ -40,7 +43,7 @@ function Home() {
                   onClick={handlePlay}
                   className="bg-white text-black py-2 px-6 rounded-full shadow-md hover:bg-gray-100"
                 >
-                  {isPlaying && currentSong?.url === song.url ? "Pause" : "Play"}
+                  {isPlaying && selectedSong?.url === song.url ? "Pause" : "Play"}
                 </button>
                 <button className="bg-gray-700 py-2 px-6 rounded-full shadow-md hover:bg-gray-600">
                   Add to Playlist
