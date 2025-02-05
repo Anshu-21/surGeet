@@ -6,6 +6,7 @@ import { MdArrowBack, MdArrowForward, MdPause, MdPlayArrow } from "react-icons/m
 import { BsFillHeartFill, BsFillPlusCircleFill } from "react-icons/bs";
 import { assets } from "../assets/assets";
 import service from "../appwrite/config";
+import MusicEraSelector from '../pages/MusicEraSelector';
 
 const AllList = () => {
   
@@ -137,13 +138,22 @@ const AllList = () => {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
-  const handleLike = (song) => {
-    setLikedSongs((prevLikes) =>
-      prevLikes.includes(song.name)
-        ? prevLikes.filter((like) => like !== song.name)
-        : [...prevLikes, song.name]
-    );
+ 
+     // Handle song like (mark as favorite)
+     const handleLike = (song) => {
+      if (!likedSongs.includes(song.name)) {
+          // Upload the favorite to Appwrite
+          service.uploadFavoriteMusic(userId, song.id); // Access uploadFavoriteMusic through appwriteService
+          
+          // Update the local liked songs state
+          setLikedSongs([...likedSongs, song.name]);
+      } else {
+          // Optionally handle unliking if needed
+          setLikedSongs(likedSongs.filter((name) => name !== song.name));
+      }
   };
+ 
+
 
   useEffect(() => {
     const fetchRecordings = async () => {
@@ -169,14 +179,14 @@ const AllList = () => {
           onClick={() => handleCategoryClick("Music Taste")}
         >
           <FaMusic size={24} />
-          <span>Music Library</span>
+          <span>Music</span>
         </button>
         <button
           className="flex items-center space-x-4 text-lg hover:text-purple-300 transition"
-          onClick={() => handleCategoryClick("Playlists")}
+          onClick={() => handleCategoryClick("Library")}
         >
           <FaList size={24} />
-          <span>Playlists</span>
+          <span>Lists</span>
         </button>
         <button
           className="flex items-center space-x-4 text-lg hover:text-purple-300 transition"
@@ -192,45 +202,45 @@ const AllList = () => {
       <div className="flex-1 relative mx-3 my-3 overflow-y-auto max-h-[calc(100vh-6rem)]">
         {selectedCategory === "Music Taste" && (
           <div>
-            <h2 className="text-2xl font-bold mb-4">Library</h2>
+             <h2 className="text-2xl font-bold mb-4">Sur-Geet</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {songs.map((song, index) => (
-                <div
-                  key={index}
-                  className="w-80 h-96 p-4 bg-gray-800 rounded-lg shadow-lg flex flex-col items-center space-y-2"
-                >
-                  <div className="w-full h-3/5">
-                    <img
-                      src={song.image}
-                      alt={song.name}
-                      className="w-full h-full object-cover rounded-lg shadow-md"
-                    />
-                  </div>
-                  <h3 className="text-lg font-semibold text-center">{song.name}</h3>
-                  <p className="text-sm text-gray-400 text-center">{song.artist}</p>
-                  <div className="flex space-x-4 mt-2">
-                    <button
-                      onClick={() => handleSongClick(song, index)}
-                      className="bg-purple-500 px-4 py-2 rounded-lg shadow-md text-white hover:bg-purple-400"
+                {songs.map((song, index) => (
+                    <div
+                        key={index}
+                        className="w-80 h-96 p-4 bg-gray-800 rounded-lg shadow-lg flex flex-col items-center space-y-2"
                     >
-                      Play
-                    </button>
-                    <button
-                      onClick={() => handleLike(song)}
-                      className={`${likedSongs.includes(song.name) ? "text-red-500" : "text-gray-400"
-                        } hover:text-red-500`}
-                    >
-                      <BsFillHeartFill size={20} />
-                    </button>
-                    <button
-                      onClick={() => handleAddToPlaylist(song)}
-                      className="text-blue-500 hover:text-blue-400"
-                    >
-                      <BsFillPlusCircleFill size={20} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                        <div className="w-full h-3/5">
+                            <img
+                                src={song.image}
+                                alt={song.name}
+                                className="w-full h-full object-cover rounded-lg shadow-md"
+                            />
+                        </div>
+                        <h3 className="text-lg font-semibold text-center">{song.name}</h3>
+                        <p className="text-sm text-gray-400 text-center">{song.artist}</p>
+                        <div className="flex space-x-4 mt-2">
+                            <button
+                                onClick={() => handleSongClick(song, index)}
+                                className="bg-purple-500 px-4 py-2 rounded-lg shadow-md text-white hover:bg-purple-400"
+                            >
+                                Play
+                            </button>
+                            <button
+                                onClick={() => handleLike(song)}
+                                className={`${likedSongs.includes(song.name) ? "text-red-500" : "text-gray-400"
+                                    } hover:text-red-500`}
+                            >
+                                <BsFillHeartFill size={20} />
+                            </button>
+                            <button
+                                onClick={() => handleAddToPlaylist(song)}
+                                className="text-blue-500 hover:text-blue-400"
+                            >
+                                <BsFillPlusCircleFill size={20} />
+                            </button>
+                        </div>
+                    </div>
+                ))}
             </div>
 
 
@@ -264,8 +274,17 @@ const AllList = () => {
       </div>
     )}
 
+
+{selectedCategory === "Library" && (
+      <div>
+    <MusicEraSelector />
+
+      </div>
+    )}
+
       </div>
 
+    
 
       {selectedSong && (
         <div className="fixed bottom-0 left-0 right-0 bg-gray-800 p-4">

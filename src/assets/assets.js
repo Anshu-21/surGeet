@@ -6,6 +6,9 @@ import ks from './ks.jpg';
 import pop from './pop.jpg';
 import th from './th.jpg';
 import ts from './ts.jpg';
+import kk from './kk.jpg';
+import obs from './obs.webp';
+import dr from './dr.jpg';
 import ap from './about_page.jpg';
 
 import ts1 from './ts1.jpg';
@@ -82,6 +85,9 @@ export const assets = {
     th,
     ts,
     ap,
+    kk,
+    dr,
+    obs,
 
     ts1,
     ts2,

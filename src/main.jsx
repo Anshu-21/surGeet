@@ -14,7 +14,6 @@ import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import AllList from "./pages/AllList.jsx";
 import Player from "./pages/Player.jsx";
-import CreateList from "./pages/CreateList.jsx";
 import { AudioProvider } from "./pages/AudioProvider.jsx";
 
 const router = createBrowserRouter([
@@ -62,6 +61,14 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "/dashboard",
+        element: (
+          <AuthLayout authentication>
+            <Dashboard />
+          </AuthLayout>
+        ),
+      },
+      {
         path: "/player",
         element: (
           <AuthLayout authentication>
@@ -69,14 +76,7 @@ const router = createBrowserRouter([
           </AuthLayout>
         ),
       },
-      {
-        path: "/createlist",
-        element: (
-          <AuthLayout authentication>
-            <CreateList />
-          </AuthLayout>
-        ),
-      },
+      
     ],
   },
 ]);

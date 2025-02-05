@@ -51,12 +51,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
       active: authStatus,
       icon: <FaTachometerAlt />,
     },
-    {
-      name: "CreateList",
-      slug: "/createlist",
-      active: authStatus,
-      icon: <FaPlus />,
-    },
+
     {
       name: "Record Tune",
       slug: "/player",
