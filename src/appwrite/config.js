@@ -1,15 +1,15 @@
-import { Client, Databases, Storage, Query } from "appwrite";
+import { Client, Databases, Storage } from "appwrite";
+import conf from '../conf/conf.js';
 
 const client = new Client();
 
 client
-  .setEndpoint("https://cloud.appwrite.io/v1")
-  .setProject("677351890026d97dd5a6");
+.setEndpoint(conf.appwriteUrl) 
+.setProject(conf.appwriteProjectId);
 
 const databases = new Databases(client);
 const storage = new Storage(client);
 
-// Upload Recording Function
 const uploadRecording = async (file, metadata) => {
   try {
     const response = await storage.createFile(
@@ -34,7 +34,6 @@ const uploadRecording = async (file, metadata) => {
   }
 };
 
-// List Recordings Function
 const listRecordings = async () => {
   try {
     const response = await databases.listDocuments(
@@ -48,7 +47,6 @@ const listRecordings = async () => {
   }
 };
 
-// Fetch Files Function
 const fetchFiles = async () => {
   try {
     const response = await storage.listFiles("6777e4e6000fd92f38ea");

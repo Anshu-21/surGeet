@@ -1,12 +1,12 @@
 import React, { useRef, useState, useEffect } from "react";
 import { IoIosShuffle } from "react-icons/io";
 import { IoMdRepeat } from "react-icons/io";
-import { FaMusic, FaList, FaMicrophone } from "react-icons/fa";
+import { FaMusic, FaMicrophone } from "react-icons/fa";
 import { MdArrowBack, MdArrowForward, MdPause, MdPlayArrow } from "react-icons/md";
 import { BsFillHeartFill, BsFillPlusCircleFill } from "react-icons/bs";
 import { assets } from "../assets/assets";
 import service from "../appwrite/config";
-import MusicEraSelector from '../pages/MusicEraSelector';
+
 
 const AllList = () => {
   
@@ -139,22 +139,6 @@ const AllList = () => {
   };
 
  
-     // Handle song like (mark as favorite)
-     const handleLike = (song) => {
-      if (!likedSongs.includes(song.name)) {
-          // Upload the favorite to Appwrite
-          service.uploadFavoriteMusic(userId, song.id); // Access uploadFavoriteMusic through appwriteService
-          
-          // Update the local liked songs state
-          setLikedSongs([...likedSongs, song.name]);
-      } else {
-          // Optionally handle unliking if needed
-          setLikedSongs(likedSongs.filter((name) => name !== song.name));
-      }
-  };
- 
-
-
   useEffect(() => {
     const fetchRecordings = async () => {
       try {
@@ -183,13 +167,6 @@ const AllList = () => {
         </button>
         <button
           className="flex items-center space-x-4 text-lg hover:text-purple-300 transition"
-          onClick={() => handleCategoryClick("Library")}
-        >
-          <FaList size={24} />
-          <span>Lists</span>
-        </button>
-        <button
-          className="flex items-center space-x-4 text-lg hover:text-purple-300 transition"
           onClick={() => handleCategoryClick("Recordings")}
         >
           <FaMicrophone size={24} />
@@ -202,7 +179,7 @@ const AllList = () => {
       <div className="flex-1 relative mx-3 my-3 overflow-y-auto max-h-[calc(100vh-6rem)]">
         {selectedCategory === "Music Taste" && (
           <div>
-             <h2 className="text-2xl font-bold mb-4">Sur-Geet</h2>
+             <h2 className="text-2xl font-bold mb-4">Library</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {songs.map((song, index) => (
                     <div
@@ -274,14 +251,6 @@ const AllList = () => {
       </div>
     )}
 
-
-{selectedCategory === "Library" && (
-      <div>
-    <MusicEraSelector />
-
-      </div>
-    )}
-
       </div>
 
     
@@ -299,14 +268,7 @@ const AllList = () => {
 
             <div className="flex items-center space-x-4">
               <span>{formatTime(currentTime)}</span>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={(currentTime / duration) * 100 || 0}
-                onChange={handleSeek}
-                className="w-24"
-              />
+              <input type="range" min="0" max="100" value={(currentTime / duration) * 100 || 0}onChange={handleSeek} />
               <span>{formatTime(duration)}</span>
             </div>
 
@@ -327,17 +289,7 @@ const AllList = () => {
                 <IoMdRepeat size={24} />
               </button>
             </div>
-
-
-
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={volume * 100}
-              onChange={handleVolumeChange}
-              className="w-24"
-            />
+            <input type="range" min="0" max="100" value={volume * 100} onChange={handleVolumeChange}/>
           </div>
         </div>
       )}

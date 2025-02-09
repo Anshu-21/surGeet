@@ -53,7 +53,7 @@ function Sidebar({ isOpen, toggleSidebar }) {
     },
 
     {
-      name: "Record Tune",
+      name: "Add Tune",
       slug: "/player",
       active: authStatus,
       icon: <FaMicrophoneAlt />,

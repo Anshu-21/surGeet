@@ -8,12 +8,12 @@ const song = { name: "Tera Ho Ke", artist: "King, Bella", url: assets.songs.song
 
 function Home() {
   const { selectedSong, isPlaying, playSong, handlePlayPause } = useContext(AudioContext);
-  const isLoggedIn = useSelector((state) => state.auth.status); // Check login status
-  const navigate = useNavigate(); // For redirection
+  const isLoggedIn = useSelector((state) => state.auth.status);  
+  const navigate = useNavigate();
 
   const handlePlay = () => {
     if (!isLoggedIn) {
-      navigate("/login"); // Redirect to login page if not logged in
+      navigate("/login"); 
       return;
     }
     if (selectedSong?.url !== song.url) {

@@ -7,7 +7,7 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [recordings, setRecordings] = useState([]);
   const [playlists, setPlaylists] = useState([]);
-  const [favorites, setFavorites] = useState([]);
+  const [favorites, setFavorites] = useState([]); 
   const [activeSection, setActiveSection] = useState(null);
 
   useEffect(() => {
@@ -16,16 +16,6 @@ const Dashboard = () => {
         const currentUser = await authService.getCurrentUser();
         if (currentUser) {
           setUser(currentUser);
-          const userId = currentUser.$id;
-          const [userRecordings, userPlaylists] = await Promise.all([
-            service.getRecordingsForUser(userId),
-            service.getPlaylistsForUser(userId),
-          ]);
-          setRecordings(userRecordings);
-          setPlaylists(userPlaylists);
-
-          const userFavorites = await service.getFavoritesForUser(userId);
-          setFavorites(userFavorites);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
@@ -34,11 +24,11 @@ const Dashboard = () => {
 
     fetchUserData();
   }, []);
-  
+
   useEffect(() => {
     const fetchRecordings = async () => {
       try {
-        const response = await service.listRecordings(); 
+        const response = await service.listRecordings();
         if (response && response.documents) {
           setRecordings(response.documents);
         }
@@ -50,6 +40,35 @@ const Dashboard = () => {
     fetchRecordings();
   }, []);
 
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const response = await service.listPlaylists();
+        if (response && response.documents) {
+          setPlaylists(response.documents);
+        }
+      } catch (error) {
+        console.error("Error fetching playlists:", error);
+      }
+    };
+
+    fetchPlaylists();
+  }, []);
+
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      try {
+        const response = await service.listFavorites();
+        if (response && response.documents) {
+          setFavorites(response.documents);
+        }
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+      }
+    };
+
+    fetchFavorites();
+  }, []);
 
   return (
     <div className="bg-gradient-to-br from-gray-800 via-gray-900 to-black min-h-screen p-8">
@@ -75,7 +94,7 @@ const Dashboard = () => {
           onClick={() => setActiveSection('playlists')}
           className={`px-4 py-2 rounded ${activeSection === 'playlists' ? 'bg-blue-500 text-white' : 'bg-gray-300 text-gray-700'}`}
         >
-          Playlists
+          Songs
         </button>
         <button
           onClick={() => setActiveSection('favorites')}
@@ -86,37 +105,36 @@ const Dashboard = () => {
       </div>
 
       <AnimatePresence>
-      {activeSection === 'recordings' && (
-  <motion.section
-    key="recordings"
-    initial={{ opacity: 0, y: 50 }}
-    animate={{ opacity: 1, y: 0 }}
-    exit={{ opacity: 0, y: 50 }}
-    className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-700 via-gray-800 to-black"
-  >
-    <h2 className="text-2xl font-bold text-white mb-6 text-center">
-      Your Recordings
-    </h2>
-    <div className="space-y-4">
-          {recordings.length > 0 ? (
-            recordings.map((recording) => (
-              <div key={recording.$id} className="bg-gray-600 p-4 rounded-lg">
-                <p className="text-sm font-semibold">{recording.recording_name}</p>
-                <audio controls className="w-full mt-2">
-                  <source
-                    src={`https://cloud.appwrite.io/v1/storage/buckets/6777e4e6000fd92f38ea/files/${recording.file_url}/view?project=677351890026d97dd5a6`}
-                    type="audio/wav"
-                  />
-                </audio>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400">No recordings found.</p>
-          )}
-        </div>
-  </motion.section>
-)}
-
+        {activeSection === 'recordings' && (
+          <motion.section
+            key="recordings"
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="p-6 rounded-lg shadow-lg bg-gradient-to-br from-gray-700 via-gray-800 to-black"
+          >
+            <h2 className="text-2xl font-bold text-white mb-6 text-center">
+              Your Recordings
+            </h2>
+            <div className="space-y-4">
+              {recordings.length > 0 ? (
+                recordings.map((recording) => (
+                  <div key={recording.$id} className="bg-gray-600 p-4 rounded-lg">
+                    <p className="text-sm font-semibold">{recording.recording_name}</p>
+                    <audio controls className="w-full mt-2">
+                      <source
+                        src={`https://cloud.appwrite.io/v1/storage/buckets/6777e4e6000fd92f38ea/files/${recording.file_url}/view?project=677351890026d97dd5a6`}
+                        type="audio/wav"
+                      />
+                    </audio>
+                  </div>
+                ))
+              ) : (
+                <p className="text-gray-400">No recordings found.</p>
+              )}
+            </div>
+          </motion.section>
+        )}
 
         {activeSection === 'playlists' && (
           <motion.section
@@ -126,11 +144,15 @@ const Dashboard = () => {
             exit={{ opacity: 0, y: 50 }}
             className="p-4 bg-gray-600 shadow-md rounded-md"
           >
-            <h2 className="text-xl font-semibold text-white mb-4">Your Playlists</h2>
+            <h2 className="text-xl font-semibold text-white mb-4">Your Songs</h2>
             {playlists.length > 0 ? (
-              <div className="grid gap-4">{playlists.map((playlist) => playlist.name)}</div>
+              <div className="grid gap-4">
+                {playlists.map((playlist) => (
+                  <p key={playlist.$id}>{playlist.name}</p>
+                ))}
+              </div>
             ) : (
-              <p className="text-white">No playlists available</p>
+              <p className="text-white">No songs available</p>
             )}
           </motion.section>
         )}
@@ -145,7 +167,11 @@ const Dashboard = () => {
           >
             <h2 className="text-xl font-semibold text-white mb-4">Favorite Music</h2>
             {favorites.length > 0 ? (
-              <div className="grid gap-4">{favorites.map((fav) => fav.name)}</div>
+              <div className="grid gap-4">
+                {favorites.map((fav) => (
+                  <p key={fav.$id}>{fav.name}</p>
+                ))}
+              </div>
             ) : (
               <p className="text-white">No favorite music available</p>
             )}
@@ -157,6 +183,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
-
-

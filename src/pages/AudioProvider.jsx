@@ -22,7 +22,7 @@ export const AudioProvider = ({ children }) => {
         if (isPlaying) {
             audioRef.current.pause();
         } else {
-            if (!selectedSong) return; // Prevent playing if no song is selected
+            if (!selectedSong) return; 
             audioRef.current.src = selectedSong.url;
             audioRef.current.play();
         }
