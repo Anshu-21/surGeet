@@ -1,4 +1,3 @@
-// MusicContext.jsx
 import React, { createContext, useContext, useState, useRef } from "react";
 
 export const MusicContext = createContext();
@@ -11,54 +10,70 @@ export const MusicProvider = ({ children }) => {
   const [isShuffle, setIsShuffle] = useState(false);
   const [isRepeat, setIsRepeat] = useState(false);
   const [volume, setVolume] = useState(1);
-  const [songs, setSongs] = useState([]);
+  const [songs, setSongs] = useState([]); // Store song list
   const [currentSongIndex, setCurrentSongIndex] = useState(0);
   const audioRef = useRef(null);
 
-  const playSong = (song, index) => {
+  const playSong = (song, index, songList = songs) => {
+    if (!song) return;
+  
+    console.log("Playing:", song.name);
+    console.log("Song list:", songList);
+  
     setCurrentSong(song);
     setCurrentSongIndex(index);
+    setSongs(songList);
     setIsPlaying(true);
+  
     setTimeout(() => {
       if (audioRef.current) {
         audioRef.current.src = song.url;
+        console.log("Audio source set to:", song.url);
         audioRef.current.play();
       }
     }, 200);
   };
-
+  
   const handlePlayPause = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
+    if (!currentSong) return;
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
     }
+    setIsPlaying(!isPlaying);
   };
 
   const handleNext = () => {
-    let nextIndex = isShuffle
-      ? Math.floor(Math.random() * songs.length)
-      : (currentSongIndex + 1) % songs.length;
-    playSong(songs[nextIndex], nextIndex);
+    if (!songs || songs.length === 0) return;
+  
+    let nextIndex = (currentSongIndex + 1) % songs.length;
+    console.log("Next song index:", nextIndex); // Debugging
+    console.log("Songs list:", songs); // Debugging
+  
+    playSong(songs[nextIndex], nextIndex, songs);
   };
-
+  
+  
   const handlePrev = () => {
-    let prevIndex =
-      isShuffle || currentSongIndex === 0
-        ? Math.floor(Math.random() * songs.length)
-        : (currentSongIndex - 1 + songs.length) % songs.length;
-    playSong(songs[prevIndex], prevIndex);
+    if (!songs || songs.length === 0) return;
+  
+    let prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+    console.log("Previous song index:", prevIndex); // Debugging
+    console.log("Songs list:", songs); // Debugging
+  
+    playSong(songs[prevIndex], prevIndex, songs);
   };
-
+  
+  
   const handleShuffle = () => {
     setIsShuffle(!isShuffle);
+    if (!isShuffle) setIsRepeat(false); 
   };
 
   const handleRepeat = () => {
     setIsRepeat(!isRepeat);
+    if (!isRepeat) setIsShuffle(false); 
   };
 
   const handleTimeUpdate = () => {
@@ -114,7 +129,14 @@ export const MusicProvider = ({ children }) => {
         ref={audioRef}
         onTimeUpdate={handleTimeUpdate}
         onLoadedMetadata={handleLoadedMetadata}
-        onEnded={isRepeat ? () => audioRef.current.play() : handleNext}
+        onEnded={() => {
+          if (isRepeat) {
+            audioRef.current.currentTime = 0;
+            audioRef.current.play();
+          } else {
+            handleNext();
+          }
+        }}
       />
     </MusicContext.Provider>
   );

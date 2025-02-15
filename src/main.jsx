@@ -85,7 +85,7 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
-    <MusicProvider>  {/* Move MusicProvider here */}
+    <MusicProvider> 
       <AudioProvider>
         <RouterProvider router={router} />
       </AudioProvider>

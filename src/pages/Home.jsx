@@ -14,11 +14,6 @@ const song = {
 
 function Home() {
   const musicContext = useContext(MusicContext);
-  
-  // Ensure MusicContext is available before destructuring
-  if (!musicContext) {
-    return <div className="text-red-500">MusicContext not found. Ensure it is wrapped in a provider.</div>;
-  }
 
   const { selectedSong, isPlaying, playSong, handlePlayPause } = musicContext;
   const isLoggedIn = useSelector((state) => state.auth.status);  
