@@ -5,6 +5,7 @@ import { login, logout } from "./store/authSlice";
 import { Footer, Header } from "./components";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./components/Sidebar/Sidebar";
+import Bottombar from "./components/Bottombar/BottomBar";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -47,6 +48,7 @@ function App() {
         <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
         <Outlet context={{ backgroundStyle, setBackgroundStyle }} />
       </main>
+      <Bottombar/>
       <Footer />
     </div>
   ) : null;

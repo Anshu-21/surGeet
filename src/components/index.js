@@ -1,5 +1,6 @@
 import Header from "./Header/Header";
 import Sidebar from "./Sidebar/Sidebar";
+import Bottombar from "./Bottombar/BottomBar";
 import Footer from "./Footer/Footer";
 import Container from "./Container/Container";
 import LogoutBtn from "./Header/LogoutBtn";
@@ -19,4 +20,5 @@ export {
     AuthLayout,
     Input,
     Sidebar,
+    Bottombar,
 }

@@ -2,12 +2,25 @@ import React, { useContext } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets"; 
-import { AudioContext } from "./AudioProvider";
+import { MusicContext } from "../pages/MusicContext";
 
-const song = { name: "Tera Ho Ke", artist: "King, Bella", url: assets.songs.songki, image: assets.images.th };
+const song = { 
+  id: 1, 
+  name: "Tera Ho Ke", 
+  artist: "King, Bella", 
+  url: assets.songs.songki, 
+  image: assets.images.th 
+};
 
 function Home() {
-  const { selectedSong, isPlaying, playSong, handlePlayPause } = useContext(AudioContext);
+  const musicContext = useContext(MusicContext);
+  
+  // Ensure MusicContext is available before destructuring
+  if (!musicContext) {
+    return <div className="text-red-500">MusicContext not found. Ensure it is wrapped in a provider.</div>;
+  }
+
+  const { selectedSong, isPlaying, playSong, handlePlayPause } = musicContext;
   const isLoggedIn = useSelector((state) => state.auth.status);  
   const navigate = useNavigate();
 
@@ -16,8 +29,8 @@ function Home() {
       navigate("/login"); 
       return;
     }
-    if (selectedSong?.url !== song.url) {
-      playSong(song, 0);
+    if (selectedSong?.id !== song.id) {
+      playSong(song);
     } else {
       handlePlayPause();
     }
@@ -43,7 +56,7 @@ function Home() {
                   onClick={handlePlay}
                   className="bg-white text-black py-2 px-6 rounded-full shadow-md hover:bg-gray-100"
                 >
-                  {isPlaying && selectedSong?.url === song.url ? "Pause" : "Play"}
+                  {isPlaying && selectedSong?.id === song.id ? "Pause" : "Play"}
                 </button>
                 <button className="bg-gray-700 py-2 px-6 rounded-full shadow-md hover:bg-gray-600">
                   Add to Playlist

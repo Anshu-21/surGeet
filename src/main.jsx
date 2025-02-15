@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import AllList from "./pages/AllList.jsx";
 import Player from "./pages/Player.jsx";
 import { AudioProvider } from "./pages/AudioProvider.jsx";
+import { MusicProvider } from "./pages/MusicContext.jsx";
 
 const router = createBrowserRouter([
   {
@@ -84,9 +85,11 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <Provider store={store}>
+    <MusicProvider>  {/* Move MusicProvider here */}
       <AudioProvider>
         <RouterProvider router={router} />
       </AudioProvider>
+      </MusicProvider>
     </Provider>
   </React.StrictMode>
 );
