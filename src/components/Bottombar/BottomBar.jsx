@@ -9,7 +9,7 @@ import {
   MdVolumeUp,
   MdVolumeOff,
 } from "react-icons/md";
-import { useMusic } from "../../pages/MusicContext";
+import { useMusic } from "../../components/MusicContext";
 
 function BottomBar() {
   const {

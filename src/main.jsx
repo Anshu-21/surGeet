@@ -14,8 +14,8 @@ import Signup from "./pages/Signup.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import AllList from "./pages/AllList.jsx";
 import Player from "./pages/Player.jsx";
-import { AudioProvider } from "./pages/AudioProvider.jsx";
-import { MusicProvider } from "./pages/MusicContext.jsx";
+import { AudioProvider } from "./components/AudioProvider.jsx";
+import { MusicProvider } from "./components/MusicContext.jsx";
 
 const router = createBrowserRouter([
   {

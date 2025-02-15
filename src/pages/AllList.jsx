@@ -3,7 +3,7 @@ import { FaMusic, FaMicrophone } from "react-icons/fa";
 import { BsFillHeartFill, BsFillPlusCircleFill } from "react-icons/bs";
 import { assets } from "../assets/assets";
 import service from "../appwrite/config";
-import { MusicContext } from "../pages/MusicContext";
+import { MusicContext } from "../components/MusicContext";
 
 const AllList = () => {
   const { playSong } = useContext(MusicContext);

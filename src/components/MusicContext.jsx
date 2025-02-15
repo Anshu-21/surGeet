@@ -16,10 +16,7 @@ export const MusicProvider = ({ children }) => {
 
   const playSong = (song, index, songList = songs) => {
     if (!song) return;
-  
-    console.log("Playing:", song.name);
-    console.log("Song list:", songList);
-  
+
     setCurrentSong(song);
     setCurrentSongIndex(index);
     setSongs(songList);
@@ -28,7 +25,6 @@ export const MusicProvider = ({ children }) => {
     setTimeout(() => {
       if (audioRef.current) {
         audioRef.current.src = song.url;
-        console.log("Audio source set to:", song.url);
         audioRef.current.play();
       }
     }, 200);

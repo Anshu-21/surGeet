@@ -2,7 +2,7 @@ import React, { useContext } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets"; 
-import { MusicContext } from "../pages/MusicContext";
+import { MusicContext } from "../components/MusicContext";
 
 const song = { 
   id: 1, 
